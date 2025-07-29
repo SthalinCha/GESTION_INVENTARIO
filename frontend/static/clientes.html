@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clientes - Ferretería Don Telmo</title>
+  <link rel="stylesheet" href="clientes.css" />
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" aria-label="Menú principal">
+    <h2>Don Telmo</h2>
+    <a href="productos.html">Productos</a>
+    <a href="clientes.html" class="active" aria-current="page">Clientes</a>
+    <a href="facturas.html">Facturas</a>
+  </nav>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <button class="menu-toggle" aria-label="Mostrar / Ocultar menú">☰</button>
+    <nav>
+      <a href="productos.html">Productos</a>
+      <a href="clientes.html" class="active">Clientes</a>
+      <a href="facturas.html">Facturas</a>
+    </nav>
+  </header>
+
+  <!-- Contenedor mensajes -->
+  <div id="mensaje" class="mensaje" aria-live="polite"></div>
+
+  <!-- Contenido principal -->
+  <main class="content">
+    <h1>Gestión de Clientes</h1>
+
+    <div class="actions">
+      <button id="btn-agregar">Agregar Cliente</button>
+      <input type="text" id="input-buscar" placeholder="Buscar cliente por cédula..." aria-label="Buscar cliente por cédula" />
+      <button id="btn-buscar">Buscar</button>
+    </div>
+
+    <section class="client-list" id="client-list">
+      <!-- Se cargan dinámicamente -->
+    </section>
+  </main>
+
+  <!-- Modal Agregar/Modificar -->
+  <div class="modal hidden" id="modal-cliente" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <button class="close-btn" aria-label="Cerrar">&times;</button>
+      <h2 id="modal-title">Agregar Cliente</h2>
+      <form id="form-cliente" novalidate>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombreCliente" required placeholder="Juan" />
+
+        <label for="apellido">Apellido:</label>
+        <input type="text" id="apellido" name="apellidoCliente" required placeholder="Pérez" />
+
+        <label for="documento">Cédula o RUC:</label>
+        <input type="text" id="documento" name="cedula" required placeholder="1010101010" />
+
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" name="telefonoCliente" required placeholder="0991234567" />
+
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="correoCliente" required placeholder="correo@ejemplo.com" />
+
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccionCliente" placeholder="Av. Siempre Viva 123" />
+
+        <!-- Botones -->
+        <div class="btn-group">
+          <button type="submit" aria-label="Guardar cliente">Guardar</button>
+          <button type="button" id="btn-cancelar" aria-label="Cancelar edición o creación">Cancelar</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Confirmar eliminación -->
+  <div class="modal hidden" id="modal-confirmar" role="dialog" aria-modal="true" aria-labelledby="modal-confirmar-titulo">
+    <div class="modal-content">
+      <h2 id="modal-confirmar-titulo">Confirmar Eliminación</h2>
+      <p id="confirmar-texto"></p>
+      <div class="btn-group">
+        <button id="btn-confirmar-eliminar" class="delete-btn">Eliminar</button>
+        <button id="btn-cancelar-eliminar" class="cancel-btn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_URL = "http://localhost:8001/clientes";
+
+  const sidebar = document.querySelector('.sidebar');
+  const menuToggleBtn = document.querySelector('.menu-toggle');
+  const content = document.querySelector('.content');
+
+  const modalCliente = document.getElementById('modal-cliente');
+  const modalConfirmar = document.getElementById('modal-confirmar');
+
+  const btnAgregar = document.getElementById('btn-agregar');
+  const closeBtnCliente = modalCliente.querySelector('.close-btn');
+  const formCliente = document.getElementById('form-cliente');
+  const clientList = document.getElementById('client-list');
+  const inputBuscar = document.getElementById('input-buscar');
+  const btnBuscar = document.getElementById('btn-buscar');
+  const btnCancelar = document.getElementById('btn-cancelar');
+
+  const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
+  const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+  const confirmarTexto = document.getElementById('confirmar-texto');
+
+  const contenedorMensaje = document.getElementById('mensaje');
+
+  let clientes = [];
+  let clienteAEliminarId = null;
+
+  // Toggle sidebar
+  menuToggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
+    content.classList.toggle('expanded');
+  });
+
+  // Mostrar mensaje (success, error, warning, info)
+  function mostrarMensaje(mensaje, tipo) {
+    contenedorMensaje.textContent = mensaje;
+    contenedorMensaje.className = '';
+    contenedorMensaje.classList.add('mensaje', `mensaje-${tipo}`);
+    setTimeout(() => {
+      contenedorMensaje.classList.remove(`mensaje-${tipo}`);
+      contenedorMensaje.textContent = '';
+    }, 4000);
+  }
+
+  // Cargar clientes desde API, con parámetro opcional cedula para buscar
+  async function cargarClientes(cedula = '') {
+    try {
+      let url = API_URL + '/';
+      if (cedula.trim() !== '') {
+        url = `${API_URL}/buscar?cedula=${encodeURIComponent(cedula.trim())}`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Error al cargar clientes');
+      clientes = await res.json();
+      renderClientes();
+    } catch (error) {
+      mostrarMensaje(error.message, 'error');
+    }
+  }
+
+  // Renderizar clientes (ya filtrados en backend)
+  function renderClientes() {
+    clientList.innerHTML = '';
+
+    if (clientes.length === 0) {
+      clientList.innerHTML = '<p>No se encontraron clientes.</p>';
+      return;
+    }
+
+    clientes.forEach(c => {
+      const card = document.createElement('article');
+      card.className = 'client-card';
+
+      card.innerHTML = `
+        <div class="client-info">
+          <h3>${c.nombreCliente} ${c.apellidoCliente || ''}</h3>
+          <p><strong>Cédula:</strong> ${c.cedula}</p>
+          <p><strong>Correo:</strong> ${c.correoCliente}</p>
+          <p><strong>Teléfono:</strong> ${c.telefonoCliente}</p>
+          <p><strong>Dirección:</strong> ${c.direccionCliente || 'N/A'}</p>
+        </div>
+        <div class="client-actions">
+          <button class="btn-modificar">Modificar</button>
+          <button class="btn-eliminar delete-btn">Eliminar</button>
+        </div>
+      `;
+
+
+      card.querySelector('.btn-modificar').addEventListener('click', () => abrirModalModificar(c));
+      card.querySelector('.btn-eliminar').addEventListener('click', () => abrirModalConfirmarEliminar(c));
+      clientList.appendChild(card);
+    });
+  }
+
+  // Abrir modal para agregar cliente
+  btnAgregar.addEventListener('click', () => {
+    formCliente.reset();
+    document.getElementById('clienteId')?.remove();
+    if (!document.getElementById('clienteId')) {
+      const inputId = document.createElement('input');
+      inputId.type = 'hidden';
+      inputId.id = 'clienteId';
+      inputId.name = 'clienteId';
+      formCliente.appendChild(inputId);
+    }
+    modalCliente.querySelector('h2').textContent = 'Agregar Cliente';
+    modalCliente.classList.remove('hidden');
+  });
+
+  // Abrir modal para modificar cliente
+  function abrirModalModificar(c) {
+    formCliente.reset();
+    modalCliente.querySelector('h2').textContent = 'Modificar Cliente';
+    let inputId = document.getElementById('clienteId');
+    if (!inputId) {
+      inputId = document.createElement('input');
+      inputId.type = 'hidden';
+      inputId.id = 'clienteId';
+      inputId.name = 'clienteId';
+      formCliente.appendChild(inputId);
+    }
+    inputId.value = c.idCliente;
+    document.getElementById('nombre').value = c.nombreCliente;
+    document.getElementById('apellido').value = c.apellidoCliente;
+    document.getElementById('documento').value = c.cedula;
+    document.getElementById('telefono').value = c.telefonoCliente;
+    document.getElementById('email').value = c.correoCliente;
+    document.getElementById('direccion').value = c.direccionCliente || '';
+    modalCliente.classList.remove('hidden');
+  }
+
+  // Cerrar modal cliente
+  closeBtnCliente.addEventListener('click', () => {
+    modalCliente.classList.add('hidden');
+  });
+  btnCancelar.addEventListener('click', () => {
+    modalCliente.classList.add('hidden');
+  });
+
+  // Abrir modal confirmar eliminación
+  function abrirModalConfirmarEliminar(c) {
+    clienteAEliminarId = c.idCliente;
+    confirmarTexto.textContent = `¿Está seguro que desea eliminar al cliente "${c.nombreCliente} ${c.apellidoCliente}"?`;
+    modalConfirmar.classList.remove('hidden');
+  }
+
+  // Cancelar eliminación
+  btnCancelarEliminar.addEventListener('click', () => {
+    clienteAEliminarId = null;
+    modalConfirmar.classList.add('hidden');
+  });
+
+  // Confirmar eliminación
+  btnConfirmarEliminar.addEventListener('click', async () => {
+    if (!clienteAEliminarId) return;
+    try {
+      const res = await fetch(`${API_URL}/${clienteAEliminarId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Error al eliminar cliente');
+      mostrarMensaje('Cliente eliminado correctamente', 'exito');
+      modalConfirmar.classList.add('hidden');
+      clienteAEliminarId = null;
+      cargarClientes(inputBuscar.value);
+    } catch (error) {
+      mostrarMensaje(error.message, 'error');
+    }
+  });
+
+  // Enviar formulario agregar/modificar cliente
+  formCliente.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Validaciones básicas HTML + requeridos
+    if (!formCliente.checkValidity()) {
+      mostrarMensaje('Por favor, rellene todos los campos obligatorios correctamente.', 'warning');
+      return;
+    }
+
+    const formData = new FormData(formCliente);
+    const data = Object.fromEntries(formData.entries());
+
+    // Validar cédula con expresión simple (solo números, longitud 10 o 13)
+    const cedulaRegex = /^\d{10,13}$/;
+    if (!cedulaRegex.test(data.cedula)) {
+      mostrarMensaje('Cédula o RUC inválido. Debe tener 10 o 13 dígitos numéricos.', 'warning');
+      return;
+    }
+
+    try {
+      let url = API_URL;
+      let method = 'POST';
+
+      if (data.clienteId && data.clienteId.trim() !== '') {
+        // Modificar cliente
+        url += `/${data.clienteId}`;
+        method = 'PUT';
+      }
+
+      // Enviar JSON
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombreCliente: data.nombreCliente,
+          apellidoCliente: data.apellidoCliente,
+          cedula: data.cedula,
+          telefonoCliente: data.telefonoCliente,
+          correoCliente: data.correoCliente,
+          direccionCliente: data.direccionCliente || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Error al guardar cliente');
+      }
+
+      mostrarMensaje('Cliente guardado correctamente', 'exito');
+      modalCliente.classList.add('hidden');
+      cargarClientes(inputBuscar.value);
+
+    } catch (error) {
+      mostrarMensaje(error.message, 'error');
+    }
+  });
+
+  // Buscar cliente (botón y tecla enter)
+  btnBuscar.addEventListener('click', () => {
+    cargarClientes(inputBuscar.value);
+  });
+
+  inputBuscar.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      cargarClientes(inputBuscar.value);
+    }
+  });
+
+  // Cargar todos los clientes al inicio
+  cargarClientes();
+</script>
+</body>
+</html>

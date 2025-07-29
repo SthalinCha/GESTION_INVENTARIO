@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Facturas - Ferretería Don Telmo</title>
+  <link rel="stylesheet" href="facturas.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <nav class="sidebar" aria-label="Menú principal" id="sidebar">
+    <h2 class="sidebar-title">Don Telmo</h2>
+    <a href="productos.html" id="link-productos" class="active" aria-current="page" title="Productos">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">
+        <path d="M3 3h18v2H3V3zm0 6h18v2H3V9zm0 6h18v2H3v-2z"/>
+      </svg>
+      Productos
+    </a>
+    <a href="clientes.html" id="link-clientes" title="Clientes">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">
+        <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.4 0-10.1 1.7-10.1 5v2.4h20.3v-2.4c0-3.3-6.7-5-10.2-5z"/>
+      </svg>
+      Clientes
+    </a>
+    <a href="facturas.html" id="link-facturas" title="Facturas">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">
+        <path d="M6 2h12c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm12 18V6H6v14h12z"/>
+      </svg>
+      Facturas
+    </a>
+  </nav>
+
+  <!-- Navbar -->
+  <header class="navbar" role="banner">
+    <button class="menu-toggle" aria-label="Mostrar / Ocultar menú" id="menu-toggle">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke="#2c3e50" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <nav role="navigation" aria-label="Navegación principal" class="navbar-links">
+      <a href="productos.html" class="active" title="Productos">Productos</a>
+      <a href="clientes.html" title="Clientes">Clientes</a>
+      <a href="facturas.html" title="Facturas">Facturas</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="content" id="main-content" tabindex="-1">
+    <button id="toggle-view" class="btn-toggle-view actions" aria-pressed="false" aria-controls="form-factura vista-facturas">Ver Facturas del Día</button>
+    <div>
+    <section id="form-factura" class="factura-form">
+      <h1>Crear Nueva Factura</h1>
+      <form id="formulario-cliente" onsubmit="return false;" autocomplete="off" novalidate>
+        <div class="actions cedula-buscar-container">
+          <label for="cedula">Cédula:</label>
+          <input type="text" id="cedula" name="cedula" placeholder="Ingrese cédula" required pattern="\d{6,15}" aria-describedby="cedulaHelp" />
+          <button type="button" id="buscar-cliente">Buscar Cliente</button>
+        </div>
+        <div>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" readonly aria-readonly="true" />
+        </div>
+        <div>
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" name="telefono" readonly aria-readonly="true" />
+        </div>
+        <div>
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion" readonly aria-readonly="true" />
+        </div>  
+        <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" readonly aria-readonly="true" />
+        </div> 
+        <label for="fecha">Fecha de emisión:</label>
+        <input type="date" id="fecha" name="fecha" required />
+      </form>
+
+      <div class="actions productos-agregar">
+        <label for="producto">Producto:</label>
+        <select id="producto" name="producto" aria-label="Seleccione un producto" required>
+          <option value="">-- Cargando productos... --</option>
+        </select>
+
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" name="cantidad" min="1" value="1" required />
+
+        <button type="button" id="btn-agregar-producto" aria-label="Agregar producto">Agregar Producto</button>
+      </div>
+
+      <table aria-label="Detalle de la factura" class="tabla-detalle">
+        <thead>
+          <tr>
+            <th scope="col">Producto</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Precio Unitario</th>
+            <th scope="col">Subtotal</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-productos"></tbody>
+      </table>
+
+      <section class="totales" aria-label="Totales de la factura">
+        <div>
+          <label for="subtotal">Subtotal:</label>
+          <input type="text" id="subtotal" readonly value="$0.00" aria-readonly="true" />
+        </div>
+        <div>
+          <label for="iva">IVA (12%):</label>
+          <input type="text" id="iva" readonly value="$0.00" aria-readonly="true" />
+        </div>
+        <div>
+          <label for="total">Total:</label>
+          <input type="text" id="total" readonly value="$0.00" aria-readonly="true" />
+        </div>
+      </section>
+
+      <button type="button" id="guardar-factura" class="actions btn-guardar">Guardar Factura</button>
+    </section>
+
+    <section id="vista-facturas" class="facturas-lista" hidden>
+      <h2>Facturas del Día</h2>
+      <table aria-label="Lista de facturas" class="tabla-detalle">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Total</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-facturas"></tbody>
+      </table>
+    </section>
+    </div>
+  </main>
+
+  <!-- Modal genérico -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-content" tabindex="-1" style="display:none;">
+    <div class="modal" role="document">
+      <button class="modal-close-btn" aria-label="Cerrar">&times;</button>
+      <div id="modal-content" class="modal-content" tabindex="0"></div>
+    </div>
+  </div>
+  <script>
+    // Variables DOM
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    const menuToggleBtn = document.getElementById('menu-toggle');
+
+    // Toggle sidebar
+    menuToggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      mainContent.classList.toggle('expanded');
+    });
+
+    // Resalta links activos (según URL)
+    function resaltarLinks() {
+      const path = window.location.pathname.split('/').pop();
+      const sidebarLinks = document.querySelectorAll('nav.sidebar a');
+      const navbarLinks = document.querySelectorAll('header.navbar nav a');
+
+      sidebarLinks.forEach(link => {
+        if(link.getAttribute('href') === path) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.classList.remove('active');
+          link.removeAttribute('aria-current');
+        }
+      });
+      navbarLinks.forEach(link => {
+        if(link.getAttribute('href') === path) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.classList.remove('active');
+          link.removeAttribute('aria-current');
+        }
+      });
+    }
+    resaltarLinks();
+
+    // Modal
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalCloseBtn = modal.querySelector('.modal-close-btn');
+
+    function mostrarModal(htmlContent) {
+      modalContent.innerHTML = htmlContent;
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('show'), 10);
+      modalCloseBtn.focus();
+    }
+    function cerrarModal() {
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modalContent.innerHTML = '';
+      }, 250);
+    }
+    modalCloseBtn.addEventListener('click', cerrarModal);
+    window.addEventListener('keydown', e => {
+      if (e.key === "Escape" && modal.style.display === 'flex') {
+        cerrarModal();
+      }
+    });
+    modal.addEventListener('click', e => {
+      if (e.target === modal) cerrarModal();
+    });
+
+    // Toggle vistas
+    const btnToggle = document.getElementById('toggle-view');
+    const formFactura = document.getElementById('form-factura');
+    const vistaFacturas = document.getElementById('vista-facturas');
+
+    btnToggle.addEventListener('click', () => {
+      const isFormVisible = !formFactura.hasAttribute('hidden');
+      if (isFormVisible) {
+        formFactura.setAttribute('hidden', '');
+        vistaFacturas.removeAttribute('hidden');
+        btnToggle.textContent = 'Crear Nueva Factura';
+        btnToggle.setAttribute('aria-pressed', 'true');
+        cargarFacturas();
+      } else {
+        vistaFacturas.setAttribute('hidden', '');
+        formFactura.removeAttribute('hidden');
+        btnToggle.textContent = 'Ver Facturas del Día';
+        btnToggle.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    // Cargar productos para select con stock incluido
+    async function cargarProductos() {
+      const selectProducto = document.getElementById('producto');
+      
+      try {
+        const res = await fetch('http://localhost:8000/productos/');
+        if (!res.ok) throw new Error('Error cargando productos');
+        const productos = await res.json();
+        selectProducto.innerHTML = '<option value="">-- Seleccione un producto --</option>';
+        productos.forEach(p => {
+          const option = document.createElement('option');
+          option.value = p.idProducto;  // ID para backend
+          option.textContent = p.nombreProducto;
+          option.dataset.precio = p.precioProducto;
+          option.dataset.stock = p.stockProducto;  // Aquí guardamos el stock
+          selectProducto.appendChild(option);
+        });
+      } catch (e) {
+        selectProducto.innerHTML = '<option value="">-- Error cargando productos --</option>';
+        console.error(e);
+      }
+    }
+
+    // Productos en la factura
+    let productosFactura = [];
+
+    // Renderizar productos en tabla
+    function renderizarProductos() {
+      const tbody = document.getElementById('tabla-productos');
+      tbody.innerHTML = '';
+      productosFactura.forEach((p, i) => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td data-label="Producto">${p.nombre}</td>
+          <td data-label="Cantidad" style="text-align:center;">${p.cantidad}</td>
+          <td data-label="Precio Unitario" style="text-align:right;">$${p.precio.toFixed(2)}</td>
+          <td data-label="Subtotal" style="text-align:right;">$${(p.precio * p.cantidad).toFixed(2)}</td>
+          <td data-label="Acciones" style="text-align:center;">
+            <button type="button" class="btn-eliminar" aria-label="Eliminar producto ${p.nombre}" data-index="${i}">Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(fila);
+      });
+      tbody.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index);
+          productosFactura.splice(idx, 1);
+          renderizarProductos();
+          actualizarTotales();
+        });
+      });
+      actualizarTotales();
+    }
+
+    // Actualizar totales
+    function actualizarTotales() {
+      const subtotal = productosFactura.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+      const iva = subtotal * 0.12;
+      const total = subtotal + iva;
+      document.getElementById('subtotal').value = `$${subtotal.toFixed(2)}`;
+      document.getElementById('iva').value = `$${iva.toFixed(2)}`;
+      document.getElementById('total').value = `$${total.toFixed(2)}`;
+    }
+
+    // Agregar producto al detalle con validación de stock
+    document.getElementById('btn-agregar-producto').addEventListener('click', () => {
+      const selectProducto = document.getElementById('producto');
+      const cantidadInput = document.getElementById('cantidad');
+
+      if (selectProducto.value === '') {
+        mostrarModal('<p>Seleccione un producto</p>');
+        return;
+      }
+
+      const cantidad = parseInt(cantidadInput.value);
+      if (!cantidad || cantidad < 1) {
+        mostrarModal('<p>Ingrese una cantidad válida</p>');
+        return;
+      }
+
+      const nombre = selectProducto.options[selectProducto.selectedIndex].text;
+      const precio = parseFloat(selectProducto.options[selectProducto.selectedIndex].dataset.precio);
+      const stock = parseInt(selectProducto.options[selectProducto.selectedIndex].dataset.stock);
+      const idProducto = selectProducto.value;
+
+      // Buscar si ya existe el producto en la factura
+      const productoExistente = productosFactura.find(p => p.idProducto === idProducto);
+      const cantidadExistente = productoExistente ? productoExistente.cantidad : 0;
+
+      if (cantidad + cantidadExistente > stock) {
+        mostrarModal(`<p>No hay suficiente stock disponible.<br>Stock actual: ${stock}, ya agregado: ${cantidadExistente}</p>`);
+        return;
+      }
+
+      if (productoExistente) {
+        productoExistente.cantidad += cantidad;
+      } else {
+        productosFactura.push({ idProducto, nombre, precio, cantidad });
+      }
+
+      renderizarProductos();
+      cantidadInput.value = 1;
+      selectProducto.selectedIndex = 0;
+    });
+
+    // Buscar cliente
+    document.getElementById('buscar-cliente').addEventListener('click', async () => {
+      const cedula = document.getElementById('cedula').value.trim();
+      if (!cedula) {
+        mostrarModal('<p>Por favor, ingrese la cédula</p>');
+        return;
+      }
+      try {
+        const res = await fetch(`http://localhost:8001/clientes/buscar?cedula=${encodeURIComponent(cedula)}`);
+        if (!res.ok) throw new Error('Error buscando clientes');
+        const clientes = await res.json();
+        if (clientes.length === 0) {
+          mostrarModal('<p>No se encontraron clientes con esa cédula</p>');
+          ['nombre','telefono','direccion','email'].forEach(id => document.getElementById(id).value = '');
+          return;
+        }
+        if (clientes.length === 1) {
+          const cliente = clientes[0];
+          document.getElementById('nombre').value = cliente.nombreCliente || cliente.nombre || "";
+          document.getElementById('telefono').value = cliente.telefonoCliente || cliente.telefono || "";
+          document.getElementById('direccion').value = cliente.direccionCliente || cliente.direccion || "";
+          document.getElementById('email').value = cliente.correoCliente || cliente.email || "";
+        } else {
+          const listaClientes = clientes.map(c => `${c.cedula || c.id}: ${c.nombreCliente || c.nombre}`).join('<br>');
+          mostrarModal(`<p>Se encontraron varios clientes:</p><p>${listaClientes}</p><p>Por favor refine la búsqueda.</p>`);
+        }
+      } catch (error) {
+        mostrarModal(`<p>${error.message}</p>`);
+      }
+    });
+
+    // Guardar factura y actualizar stock
+    document.getElementById('guardar-factura').addEventListener('click', async () => {
+      if (productosFactura.length === 0) {
+        mostrarModal("<p>Agregue al menos un producto para guardar la factura.</p>");
+        return;
+      }
+      const cedula = document.getElementById('cedula').value.trim();
+      const nombre = document.getElementById('nombre').value.trim();
+      const fecha = document.getElementById('fecha').value;
+      if (!cedula || !nombre || !fecha) {
+        mostrarModal("<p>Complete los datos del cliente y la fecha de emisión.</p>");
+        return;
+      }
+
+      // Cargar productos para obtener stocks actuales
+      let productosBackend;
+      try {
+        const resProductos = await fetch('http://localhost:8000/productos/');
+        if (!resProductos.ok) throw new Error('Error cargando productos para actualizar stock');
+        productosBackend = await resProductos.json();
+      } catch (error) {
+        mostrarModal(`<p>Error al obtener productos para actualizar stock: ${error.message}</p>`);
+        return;
+      }
+
+      // Actualizar stock en backend
+      try {
+        for (const p of productosFactura) {
+          const prodBackend = productosBackend.find(pb => pb.idProducto == p.idProducto);
+          if (!prodBackend) {
+            mostrarModal(`<p>Producto no encontrado para actualizar stock: ${p.nombre}</p>`);
+            continue;
+          }
+          const nuevoStock = prodBackend.stockProducto - p.cantidad;
+          if (nuevoStock < 0) {
+            mostrarModal(`<p>No hay stock suficiente para ${p.nombre}. Stock actual: ${prodBackend.stockProducto}</p>`);
+            return;
+          }
+          const dataActualizar = {
+            ...prodBackend,
+            stockProducto: nuevoStock
+          };
+          const resUpdate = await fetch(`http://localhost:8000/productos/${prodBackend.idProducto}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dataActualizar)
+          });
+          if (!resUpdate.ok) {
+            const errData = await resUpdate.json();
+            throw new Error(errData.detail || `Error actualizando stock para ${p.nombre}`);
+          }
+        }
+      } catch (error) {
+        mostrarModal(`<p>${error.message}</p>`);
+        return;
+      }
+
+      // Guardar factura en localStorage (o enviar al backend si tienes API)
+      const facturasGuardadas = JSON.parse(localStorage.getItem('facturas') || '[]');
+      const totalStr = document.getElementById('total').value.replace(/[^0-9.-]+/g,"");
+      const total = parseFloat(totalStr) || 0;
+      const nuevaFactura = {
+        id: facturasGuardadas.length + 1,
+        cliente: nombre,
+        cedula,
+        fecha,
+        total,
+        productos: productosFactura.map(p => ({...p}))
+      };
+      facturasGuardadas.push(nuevaFactura);
+      localStorage.setItem('facturas', JSON.stringify(facturasGuardadas));
+
+      mostrarModal("<p>Factura guardada y stock actualizado correctamente.</p>");
+
+      // Limpiar formulario y tabla
+      document.getElementById('formulario-cliente').reset();
+      productosFactura = [];
+      renderizarProductos();
+      actualizarTotales();
+      document.getElementById('producto').selectedIndex = 0;
+      document.getElementById('cantidad').value = 1;
+    });
+
+    // Cargar facturas para vista
+    function cargarFacturas() {
+      const facturas = JSON.parse(localStorage.getItem('facturas') || '[]');
+      const tbody = document.getElementById('tabla-facturas');
+      tbody.innerHTML = '';
+
+      if (facturas.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="5" style="text-align:center;">No hay facturas para mostrar</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      facturas.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="ID">${f.id}</td>
+          <td data-label="Cliente">${f.cliente}</td>
+          <td data-label="Fecha">${f.fecha}</td>
+          <td data-label="Total">$${f.total.toFixed(2)}</td>
+          <td data-label="Acciones">
+            <button type="button" aria-label="Ver detalles de factura ${f.id}" data-id="${f.id}" class="btn-ver-factura">Ver</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Asignar evento a los botones "Ver"
+      tbody.querySelectorAll('.btn-ver-factura').forEach(btn => {
+        btn.removeEventListener('click', verFacturaHandler); // Previene duplicados
+        btn.addEventListener('click', verFacturaHandler);
+      });
+
+      function verFacturaHandler(event) {
+        const id = event.currentTarget.dataset.id;
+        const factura = facturas.find(f => f.id == id);
+        if (!factura) return;
+
+        let html = `<h3>Factura #${factura.id}</h3>
+                    <p><strong>Cliente:</strong> ${factura.cliente}</p>
+                    <p><strong>Cédula:</strong> ${factura.cedula}</p>
+                    <p><strong>Fecha:</strong> ${factura.fecha}</p>
+                    <table style="width:100%; border-collapse: collapse;" border="1" aria-label="Detalle factura">
+                      <thead>
+                        <tr>
+                          <th>Producto</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody>`;
+        factura.productos.forEach(p => {
+          html += `<tr>
+                    <td>${p.nombre}</td>
+                    <td style="text-align:center;">${p.cantidad}</td>
+                    <td style="text-align:right;">$${p.precio.toFixed(2)}</td>
+                    <td style="text-align:right;">$${(p.precio * p.cantidad).toFixed(2)}</td>
+                  </tr>`;
+        });
+        html += `</tbody></table>
+                <p><strong>Total:</strong> $${factura.total.toFixed(2)}</p>`;
+        mostrarModal(html);
+      }
+    }
+    
+
+    // Inicializar
+    window.addEventListener('DOMContentLoaded', () => {
+      cargarProductos();
+      renderizarProductos();
+      actualizarTotales();
+    });
+  </script>
+
+</body>
+</html>

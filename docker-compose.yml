@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+  db_productos:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: productosdb
+    volumes:
+      - postgres_productos_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  db_clientes:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: clientesdb
+    volumes:
+      - postgres_clientes_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  db_facturas:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: facturasdb
+    volumes:
+      - postgres_facturas_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  product_service:
+    build:
+      context: ./backend/service_producto
+    depends_on:
+      - db_productos
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db_productos:5432/productosdb
+    volumes:
+      - ./backend/service_producto/app/imagenes:/app/imagenes
+    ports:
+      - "8000:8000"
+
+  service_cliente:
+    build:
+      context: ./backend/service_cliente
+    depends_on:
+      - db_clientes
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db_clientes:5432/clientesdb
+    ports:
+      - "8001:8000"
+
+  service_factura:
+    build:
+      context: ./backend/service_factura
+    depends_on:
+      - db_facturas
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db_facturas:5432/facturasdb
+    ports:
+      - "8002:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - product_service
+      - service_cliente
+      - service_factura
+
+volumes:
+  postgres_productos_data:
+  postgres_clientes_data:
+  postgres_facturas_data:

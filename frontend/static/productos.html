@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Productos - Ferretería Don Telmo</title>
+  <link rel="stylesheet" href="productos.css" />
+  
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" aria-label="Menú principal">
+    <h2>Don Telmo</h2>
+    <a href="productos.html" id="link-productos" title="Productos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v2H3V3zm0 6h18v2H3V9zm0 6h18v2H3v-2z"/></svg>
+      Productos
+    </a>
+    <a href="clientes.html" id="link-clientes" class="active" aria-current="page" title="Clientes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.4 0-10.1 1.7-10.1 5v2.4h20.3v-2.4c0-3.3-6.7-5-10.2-5z"/></svg>
+      Clientes
+    </a>
+    <a href="facturas.html" id="link-facturas" title="Facturas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm12 18V6H6v14h12z"/></svg>
+      Facturas
+    </a>
+  </nav>
+
+  <!-- Navbar superior -->
+  <header class="navbar" role="banner">
+    <button class="menu-toggle" aria-label="Mostrar / Ocultar menú">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke="#2c3e50" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <nav role="navigation" aria-label="Navegación principal">
+      <a href="productos.html" id="nav-productos" title="Productos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v2H3V3zm0 6h18v2H3V9zm0 6h18v2H3v-2z"/></svg>
+        Productos
+      </a>
+      <a href="clientes.html" id="nav-clientes" class="active" aria-current="page" title="Clientes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.4 0-10.1 1.7-10.1 5v2.4h20.3v-2.4c0-3.3-6.7-5-10.2-5z"/></svg>
+        Clientes
+      </a>
+      <a href="facturas.html" id="nav-facturas" title="Facturas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm12 18V6H6v14h12z"/></svg>
+        Facturas
+      </a>
+    </nav>
+  </header>
+
+  <main class="content" role="main">
+    <h1>Gestión de Productos</h1>
+    <div class="actions">
+      <button id="btn-agregar">Agregar Producto</button>
+      <input type="text" id="input-buscar" placeholder="Buscar producto..." aria-label="Buscar producto" />
+      <button id="btn-buscar">Buscar</button>
+    </div>
+    <div class="filter-category">
+      <label for="select-categoria">Filtrar por Categoría:</label>
+      <select id="select-categoria" aria-label="Filtrar productos por categoría">
+        <option value="todos" selected>Todos</option>
+        <option value="Construcción">Construcción</option>
+        <option value="Herramientas eléctricas">Herramientas eléctricas</option>
+        <option value="Pintura">Pintura</option>
+        <option value="Iluminación">Iluminación</option>
+      </select>
+    </div>
+    <section class="product-list" id="product-list" aria-live="polite" aria-relevant="all"></section>
+  </main>
+
+  <!-- Modal Agregar/Modificar -->
+  <div class="modal hidden" id="modal-producto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <button class="close-btn" aria-label="Cerrar modal">&times;</button>
+      <h2 id="modal-title">Agregar Producto</h2>
+      <form id="form-producto" novalidate>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombreProducto" required autocomplete="off" />
+        <label for="stock">Stock:</label>
+        <input type="number" id="stock" name="stockProducto" min="0" required />
+        <label for="categoria">Categoría:</label>
+        <select id="categoria" name="categoriaProducto" required>
+          <option value="" disabled selected>Seleccione</option>
+          <option value="Construcción">Construcción</option>
+          <option value="Herramientas eléctricas">Herramientas eléctricas</option>
+          <option value="Pintura">Pintura</option>
+          <option value="Iluminación">Iluminación</option>
+        </select>
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precioProducto" min="0" step="0.01" required />
+        <label for="imagen">URL Imagen:</label>
+        <input type="url" id="imagen" name="imagenProducto" required />
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcionProducto" rows="3"></textarea>
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Confirmación Eliminación -->
+  <div class="modal hidden" id="modal-confirmacion" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="modal-content">
+      <h2 id="confirm-title">Confirmar Eliminación</h2>
+      <p>¿Estás seguro de que deseas eliminar este producto?</p>
+      <div class="confirm-buttons">
+        <button id="btn-confirmar-eliminar" class="btn-danger">Sí, eliminar</button>
+        <button id="btn-cancelar-eliminar">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+        // Sidebar toggle
+    const sidebar = document.querySelector('nav.sidebar');
+    const menuToggleBtn = document.querySelector('.menu-toggle');
+    const content = document.querySelector('main.content');
+
+    menuToggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      content.classList.toggle('expanded');
+    });
+
+    // Resalta links activos
+    function resaltarLinks() {
+      const path = window.location.pathname.split('/').pop();
+      const sidebarLinks = document.querySelectorAll('nav.sidebar a');
+      const navbarLinks = document.querySelectorAll('header.navbar nav a');
+
+      sidebarLinks.forEach(link => {
+        if(link.getAttribute('href') === path) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.classList.remove('active');
+          link.removeAttribute('aria-current');
+        }
+      });
+      navbarLinks.forEach(link => {
+        if(link.getAttribute('href') === path) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.classList.remove('active');
+          link.removeAttribute('aria-current');
+        }
+      });
+    }
+    resaltarLinks();
+
+    const modal = document.getElementById('modal-producto');
+    const btnAgregar = document.getElementById('btn-agregar');
+    const closeBtn = modal.querySelector('.close-btn');
+    const formProducto = document.getElementById('form-producto');
+    const productList = document.getElementById('product-list');
+    const inputBuscar = document.getElementById('input-buscar');
+    const btnBuscar = document.getElementById('btn-buscar');
+    const selectCategoria = document.getElementById('select-categoria');
+
+    const modalConfirmacion = document.getElementById('modal-confirmacion');
+    const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
+    const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+
+    let productos = [];
+    let idProductoAEliminar = null;
+
+    function mostrarMensaje(texto, tipo = 'info') {
+      let contenedor = document.getElementById('mensaje-container');
+      if (!contenedor) {
+        contenedor = document.createElement('div');
+        contenedor.id = 'mensaje-container';
+        contenedor.style.position = 'fixed';
+        contenedor.style.top = '20px';
+        contenedor.style.right = '20px';
+        contenedor.style.zIndex = '9999';
+        document.body.appendChild(contenedor);
+      }
+      const mensaje = document.createElement('div');
+      mensaje.textContent = texto;
+      mensaje.style.padding = '12px 20px';
+      mensaje.style.marginTop = '8px';
+      mensaje.style.borderRadius = '4px';
+      mensaje.style.color = '#fff';
+      mensaje.style.minWidth = '220px';
+      mensaje.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+      mensaje.style.fontWeight = 'bold';
+      mensaje.style.opacity = '1';
+      mensaje.style.transition = 'opacity 0.5s ease';
+
+      switch(tipo) {
+        case 'success': mensaje.style.backgroundColor = '#28a745'; break;
+        case 'error': mensaje.style.backgroundColor = '#dc3545'; break;
+        case 'warning': mensaje.style.backgroundColor = '#ffc107'; mensaje.style.color = '#212529'; break;
+        default: mensaje.style.backgroundColor = '#17a2b8'; break;
+      }
+
+      contenedor.appendChild(mensaje);
+
+      setTimeout(() => {
+        mensaje.style.opacity = '0';
+        setTimeout(() => contenedor.removeChild(mensaje), 500);
+      }, 3000);
+    }
+
+    function cerrarModal() {
+      modal.classList.add('hidden');
+      formProducto.reset();
+      formProducto.removeAttribute('data-edit-id');
+    }
+    closeBtn.addEventListener('click', cerrarModal);
+    modal.addEventListener('click', e => {
+      if (e.target === modal) cerrarModal();
+    });
+
+    btnAgregar.addEventListener('click', () => {
+      formProducto.reset();
+      formProducto.removeAttribute('data-edit-id');
+      modal.querySelector('h2').textContent = 'Agregar Producto';
+      modal.classList.remove('hidden');
+      document.getElementById('nombre').focus();
+    });
+
+    function crearProductoHTML(producto) {
+      return `
+        <article class="product-card" data-categoria="${producto.categoriaProducto}">
+          <img src="${producto.imagenProducto}" alt="${producto.nombreProducto}" />
+          <div class="product-info">
+            <h3>${producto.nombreProducto}</h3>
+            <p>SKU: ${producto.idProducto}</p>
+            <p>Categoría: ${producto.categoriaProducto}</p>
+            <p>Precio: $${producto.precioProducto.toFixed(2)}</p>
+            <p>Stock: ${producto.stockProducto}</p>
+            <p>${producto.descripcionProducto || ''}</p>
+            <div class="product-actions">
+              <button class="btn-modificar" data-id="${producto.idProducto}">Modificar</button>
+              <button class="btn-eliminar" data-id="${producto.idProducto}">Eliminar</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderizarProductos(lista) {
+      productList.innerHTML = lista.map(crearProductoHTML).join('');
+    }
+
+    async function cargarProductos() {
+      try {
+        const res = await fetch('http://localhost:8000/productos/');
+        if (!res.ok) throw new Error('Error al cargar productos');
+        productos = await res.json();
+        renderizarProductos(productos);
+      } catch (error) {
+        productList.innerHTML = `<p>Error al cargar productos: ${error.message}</p>`;
+      }
+    }
+
+    function buscarProductos() {
+      const texto = inputBuscar.value.toLowerCase();
+      const categoriaFiltro = selectCategoria.value;
+
+      let filtrados = productos;
+
+      if (texto) {
+        filtrados = filtrados.filter(p =>
+          p.nombreProducto.toLowerCase().includes(texto)
+        );
+      }
+
+      if (categoriaFiltro !== 'todos') {
+        filtrados = filtrados.filter(p => p.categoriaProducto === categoriaFiltro);
+      }
+
+      renderizarProductos(filtrados);
+    }
+
+    btnBuscar.addEventListener('click', buscarProductos);
+    selectCategoria.addEventListener('change', buscarProductos);
+
+    productList.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('btn-modificar')) {
+        const id = e.target.getAttribute('data-id');
+        const producto = productos.find(p => p.idProducto == id);
+        if (!producto) {
+          mostrarMensaje('Producto no encontrado', 'error');
+          return;
+        }
+        formProducto.setAttribute('data-edit-id', id);
+        document.getElementById('nombre').value = producto.nombreProducto;
+        document.getElementById('stock').value = producto.stockProducto;
+        document.getElementById('categoria').value = producto.categoriaProducto;
+        document.getElementById('precio').value = producto.precioProducto;
+        document.getElementById('imagen').value = producto.imagenProducto;
+        document.getElementById('descripcion').value = producto.descripcionProducto || '';
+        modal.querySelector('h2').textContent = 'Modificar Producto';
+        modal.classList.remove('hidden');
+        document.getElementById('nombre').focus();
+      }
+
+      if (e.target.classList.contains('btn-eliminar')) {
+        idProductoAEliminar = e.target.getAttribute('data-id');
+        modalConfirmacion.classList.remove('hidden');
+      }
+    });
+
+    btnConfirmarEliminar.addEventListener('click', async () => {
+      if (!idProductoAEliminar) return;
+      try {
+        const res = await fetch(`http://localhost:8000/productos/${idProductoAEliminar}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Error al eliminar producto');
+        }
+        mostrarMensaje('Producto eliminado correctamente', 'success');
+        cargarProductos();
+      } catch (error) {
+        mostrarMensaje(error.message, 'error');
+      } finally {
+        modalConfirmacion.classList.add('hidden');
+        idProductoAEliminar = null;
+      }
+    });
+
+    btnCancelarEliminar.addEventListener('click', () => {
+      modalConfirmacion.classList.add('hidden');
+      idProductoAEliminar = null;
+    });
+
+    formProducto.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!formProducto.checkValidity()) {
+        formProducto.reportValidity();
+        return;
+      }
+
+      const idEdit = formProducto.getAttribute('data-edit-id');
+
+      const data = {
+        nombreProducto: document.getElementById('nombre').value.trim(),
+        stockProducto: parseInt(document.getElementById('stock').value, 10),
+        precioProducto: parseFloat(document.getElementById('precio').value),
+        imagenProducto: document.getElementById('imagen').value.trim(),
+        categoriaProducto: document.getElementById('categoria').value,
+        descripcionProducto: document.getElementById('descripcion').value.trim()
+      };
+
+      try {
+        let res;
+        if (idEdit) {
+          res = await fetch(`http://localhost:8000/productos/${idEdit}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+          });
+        } else {
+          res = await fetch('http://localhost:8000/productos/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+          });
+        }
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Error al guardar producto');
+        }
+
+        mostrarMensaje('Producto guardado correctamente', 'success');
+        cerrarModal();
+        cargarProductos();
+
+      } catch (error) {
+        mostrarMensaje(error.message, 'error');
+      }
+    });
+
+    // Carga inicial
+    cargarProductos();
+  </script>
+
+</body>
+</html>
